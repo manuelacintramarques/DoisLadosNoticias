@@ -1,0 +1,739 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>DoisLados — Notícias do Brasil sem viés</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@800&display=swap" rel="stylesheet">
+<style>
+:root {
+  --green:  #3ecf72; --green-p: #b8f5d0; --green-d: #1a7a3a;
+  --yellow: #ffe066; --yellow-p: #fff5b8; --yellow-d: #b89000;
+  --blue:   #4a7fd4; --blue-p: #c2d9ff;  --blue-d: #1a4a9a;
+  --dark:   #0d1f0f; --ink: #12200e;
+  --card-bg: rgba(255,255,255,0.72);
+  --card-border: rgba(255,255,255,0.9);
+  --muted: #4a5e42;
+  --radius: 18px; --radius-lg: 28px;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif;
+  min-height: 100vh;
+  background:
+    radial-gradient(ellipse 120% 80% at 10% 0%, #c8f5d8 0%, transparent 55%),
+    radial-gradient(ellipse 100% 70% at 90% 10%, #fff5b0 0%, transparent 50%),
+    radial-gradient(ellipse 90% 90% at 50% 100%, #c0d8ff 0%, transparent 60%),
+    radial-gradient(ellipse 80% 60% at 80% 60%, #d8f5e8 0%, transparent 50%),
+    #f0f8f2;
+  background-attachment: fixed;
+  color: var(--ink);
+}
+
+/* ── HEADER ── */
+header {
+  position: sticky; top: 0; z-index: 200;
+  backdrop-filter: blur(20px) saturate(1.6);
+  background: rgba(255,255,255,0.55);
+  border-bottom: 1.5px solid rgba(255,255,255,0.8);
+  box-shadow: 0 2px 32px rgba(62,207,114,0.10);
+}
+.header-inner {
+  max-width: 1400px; margin: 0 auto;
+  padding: 0 2.5rem;
+  display: flex; align-items: center; justify-content: space-between;
+  height: 72px; gap: 1rem;
+}
+.logo {
+  font-family: 'Syne', Tahoma, Geneva, sans-serif;
+  font-size: 2.2rem; font-weight: 800;
+  letter-spacing: -1px;
+  background: linear-gradient(135deg, #1a7a3a 0%, #b89000 50%, #1a4a9a 100%);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text; text-decoration: none; flex-shrink: 0;
+}
+.header-center { display: flex; align-items: center; gap: 8px; flex: 1; justify-content: center; }
+.nav-tab {
+  padding: 7px 18px; border-radius: 99px; border: none; cursor: pointer;
+  font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 0.9rem; font-weight: 600; transition: all 0.2s;
+  background: transparent; color: var(--muted);
+}
+.nav-tab.active {
+  background: linear-gradient(135deg, #1a7a3a 0%, #1a4a9a 100%);
+  color: #fff;
+}
+.nav-tab:hover:not(.active) { background: rgba(0,0,0,0.07); color: var(--ink); }
+.header-right { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+
+.flag-pills { display: flex; gap: 6px; }
+.flag-pill { width: 28px; height: 8px; border-radius: 99px; }
+.fp-g { background: var(--green); } .fp-y { background: var(--yellow); } .fp-b { background: var(--blue); }
+
+/* ── HERO ── */
+.hero-band { max-width: 1400px; margin: 0 auto; padding: 3.5rem 2.5rem 1.5rem; }
+.hero-title {
+  font-family: Tahoma, 'Tahoma', Geneva, sans-serif;
+  font-size: clamp(2.8rem, 6vw, 5rem); font-weight: 800;
+  line-height: 1.05; letter-spacing: -2px; color: var(--ink);
+}
+.hero-title em {
+  font-style: normal;
+  background: linear-gradient(90deg, #1a7a3a, #b89000, #1a4a9a);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+.hero-sub { margin-top: 0.6rem; font-size: 1.25rem; font-weight: 300; color: var(--muted); }
+
+/* ── MAIN ── */
+.page { max-width: 1400px; margin: 0 auto; padding: 0 2.5rem 4rem; }
+
+/* ── ARCHIVE TAB ── */
+.archive-section { display: none; }
+.archive-section.active { display: block; }
+.today-section { display: block; }
+.today-section.hidden { display: none; }
+
+/* ── DATE PICKER BAR ── */
+.date-bar {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 2rem; overflow-x: auto; padding-bottom: 8px;
+}
+.date-pill {
+  padding: 8px 20px; border-radius: 99px; border: 1.5px solid rgba(255,255,255,0.8);
+  background: var(--card-bg); backdrop-filter: blur(12px);
+  font-size: 0.9rem; font-weight: 600; cursor: pointer;
+  white-space: nowrap; transition: all 0.2s; color: var(--muted);
+  flex-shrink: 0;
+}
+.date-pill.active {
+  background: linear-gradient(135deg, var(--green-d), var(--blue-d));
+  color: #fff; border-color: transparent;
+}
+.date-pill:hover:not(.active) { background: rgba(255,255,255,0.9); color: var(--ink); }
+.archive-day { display: none; }
+.archive-day.active { display: block; }
+
+/* ── DETAIL VIEW ── */
+#detail-view {
+  display: none; margin-bottom: 2.5rem; border-radius: var(--radius-lg);
+  overflow: hidden;
+  box-shadow: 0 8px 60px rgba(26,74,154,0.13), 0 2px 12px rgba(0,0,0,0.06);
+  animation: popIn 0.35s cubic-bezier(0.34,1.56,0.64,1);
+}
+@keyframes popIn { from { opacity: 0; transform: scale(0.97) translateY(-10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+.detail-header {
+  background: linear-gradient(135deg, #0d2e15 0%, #0d1f3a 100%);
+  padding: 2rem 2.5rem;
+  display: grid; grid-template-columns: 180px 1fr auto;
+  gap: 1.5rem; align-items: start;
+}
+.detail-img-wrap { width: 180px; height: 120px; border-radius: 12px; overflow: hidden; flex-shrink: 0; background: rgba(255,255,255,0.1); }
+.detail-img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.detail-headline {
+  font-family: Tahoma, 'Tahoma', Geneva, sans-serif;
+  font-size: clamp(1.5rem, 3vw, 2.1rem); font-weight: 800; line-height: 1.2;
+  letter-spacing: -0.5px; color: #fff;
+}
+.detail-meta-tag {
+  display: inline-block; margin-top: 0.6rem;
+  font-family: Helvetica, 'Helvetica Neue', Arial, sans-serif;
+  font-size: 1rem; color: rgba(255,255,255,0.55); font-weight: 300;
+}
+.detail-close {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: rgba(255,255,255,0.12); border: 1.5px solid rgba(255,255,255,0.2);
+  color: #fff; font-size: 1rem; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s; flex-shrink: 0;
+}
+.detail-close:hover { background: rgba(255,255,255,0.25); }
+.detail-body { display: grid; grid-template-columns: 1fr 2px 1fr; background: var(--card-bg); backdrop-filter: blur(16px); }
+.perspective { padding: 2rem 2.5rem; }
+.persp-divider { background: linear-gradient(180deg, rgba(62,207,114,0.3), rgba(74,127,212,0.3)); margin: 1.5rem 0; }
+.persp-label {
+  display: inline-flex; align-items: center; gap: 6px;
+  font-family: Tahoma, 'Tahoma', Geneva, sans-serif;
+  font-size: 0.85rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 5px 14px; border-radius: 99px; margin-bottom: 1rem;
+}
+.left-label  { background: #ffe0e0; color: #8a1a1a; border: 1.5px solid #ffb3b3; }
+.right-label { background: #ddeeff; color: #0c2a5a; border: 1.5px solid #aaceff; }
+.persp-summary { font-size: 1.08rem; line-height: 1.8; color: var(--ink); font-weight: 300; margin-bottom: 1.5rem; }
+.sources-heading {
+  font-size: 0.8rem; font-weight: 700; letter-spacing: 0.14em; text-transform: uppercase;
+  color: var(--muted); margin-bottom: 0.7rem; padding-bottom: 0.5rem;
+  border-bottom: 1.5px solid rgba(0,0,0,0.07);
+}
+.source-row {
+  display: flex; align-items: center; gap: 10px; padding: 7px 0;
+  border-bottom: 1px solid rgba(0,0,0,0.05); text-decoration: none; color: inherit;
+  transition: opacity 0.15s;
+}
+.source-row:last-child { border-bottom: none; }
+.source-row:hover { opacity: 0.68; }
+.source-badge {
+  width: 28px; height: 28px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: Tahoma, 'Tahoma', Geneva, sans-serif;
+  font-size: 0.6rem; font-weight: 700; flex-shrink: 0;
+}
+.src-l { background: #ffe0e0; color: #8a1a1a; }
+.src-r { background: #ddeeff; color: #0c2a5a; }
+.source-text { flex: 1; min-width: 0; }
+.source-name { font-size: 0.97rem; font-weight: 600; color: var(--ink); display: block; }
+.source-title { font-size: 0.84rem; color: var(--muted); display: block; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 220px; }
+.source-arrow { font-size: 0.8rem; color: var(--muted); }
+
+/* ── NEWS SECTION HEADER ── */
+.news-section-header {
+  display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 1.5rem;
+}
+.news-section-title {
+  font-family: Tahoma, 'Tahoma', Geneva, sans-serif;
+  font-size: 2rem; font-weight: 800; letter-spacing: -0.5px; color: var(--ink);
+}
+.news-count { font-size: 1rem; color: var(--muted); }
+
+/* ── STATUS BANNER ── */
+.status-banner {
+  padding: 12px 20px; border-radius: 12px; margin-bottom: 1.5rem;
+  font-size: 0.92rem; display: none;
+}
+.status-banner.info { background: #e8f4ff; color: #1a4a9a; border: 1.5px solid #aaceff; display: block; }
+.status-banner.warn { background: #fff8e8; color: #7a5a00; border: 1.5px solid #ffe066; display: block; }
+.status-banner.success { background: #e8f8ee; color: #1a5a30; border: 1.5px solid #b8f5d0; display: block; }
+.status-banner.error { background: #ffe8e8; color: #8a1a1a; border: 1.5px solid #ffb3b3; display: block; }
+
+/* ── NEWS GRID ── */
+.news-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 1.25rem; }
+.news-card {
+  background: var(--card-bg); backdrop-filter: blur(16px);
+  border: 1.5px solid var(--card-border); border-radius: var(--radius);
+  overflow: hidden; cursor: pointer;
+  transition: transform 0.2s cubic-bezier(0.34,1.56,0.64,1), box-shadow 0.2s;
+  box-shadow: 0 2px 16px rgba(26,74,154,0.06);
+  animation: fadeUp 0.4s ease both;
+}
+@keyframes fadeUp { from { opacity: 0; transform: translateY(16px); } to { opacity: 1; transform: translateY(0); } }
+.news-card:hover { transform: translateY(-5px) scale(1.01); box-shadow: 0 12px 40px rgba(26,74,154,0.14); }
+.news-card.active { border-color: var(--yellow); box-shadow: 0 0 0 3px rgba(255,224,102,0.4), 0 12px 40px rgba(26,74,154,0.14); }
+.card-img { width: 100%; height: 180px; object-fit: cover; display: block; background: linear-gradient(135deg, #b8f5d0, #c2d9ff); }
+.card-img-fallback { width: 100%; height: 180px; display: flex; align-items: center; justify-content: center; font-size: 3rem; background: linear-gradient(135deg, #d8f5e4, #ddeeff); }
+.card-body { padding: 1.2rem 1.4rem 1.4rem; }
+.card-tema {
+  display: inline-block; font-family: Tahoma, Geneva, sans-serif;
+  font-size: 0.78rem; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase;
+  padding: 4px 12px; border-radius: 99px; margin-bottom: 0.7rem;
+}
+.tema-política   { background: #fff5b8; color: #7a5a00; }
+.tema-economia   { background: #d8f5e4; color: #1a5a30; }
+.tema-segurança  { background: #ffe0e0; color: #7a1a1a; }
+.tema-ambiente   { background: #d0f0e8; color: #0a4a38; }
+.tema-saúde      { background: #ffe8f5; color: #7a0a50; }
+.tema-esportes   { background: #ddeeff; color: #0c2a5a; }
+.tema-cultura    { background: #f0e8ff; color: #3a0a7a; }
+.tema-educação   { background: #fff0d8; color: #7a3a00; }
+.tema-internacional { background: #e8f0ff; color: #0a2a6a; }
+.tema-tecnologia { background: #f0f8ff; color: #0a3a6a; }
+.card-headline {
+  font-family: Tahoma, Geneva, sans-serif;
+  font-size: 1.22rem; font-weight: 800; line-height: 1.25;
+  letter-spacing: -0.3px; color: var(--ink); margin-bottom: 0.6rem;
+}
+.card-lide { font-size: 1rem; font-weight: 300; color: var(--muted); line-height: 1.55; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.card-footer {
+  margin-top: 1rem; display: flex; align-items: center; justify-content: space-between;
+  font-size: 0.85rem; color: var(--muted);
+}
+.card-cta {
+  font-family: Tahoma, Geneva, sans-serif; font-size: 0.78rem; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  background: linear-gradient(135deg, var(--green-p), var(--blue-p));
+  color: var(--ink); padding: 5px 14px; border-radius: 99px;
+  border: 1.5px solid rgba(255,255,255,0.8);
+}
+
+/* ── LOADING SPINNER ── */
+@keyframes spin { to { transform: rotate(360deg); } }
+.spinner {
+  width: 20px; height: 20px; border: 3px solid rgba(255,255,255,0.3);
+  border-top-color: #fff; border-radius: 50%;
+  animation: spin 0.7s linear infinite; display: inline-block; vertical-align: middle; margin-right: 8px;
+}
+
+/* ── EMPTY STATE ── */
+.empty-state {
+  text-align: center; padding: 4rem 2rem; color: var(--muted);
+}
+.empty-state .emoji { font-size: 3rem; margin-bottom: 1rem; }
+.empty-state h3 { font-size: 1.4rem; font-family: Tahoma, Geneva, sans-serif; margin-bottom: 0.6rem; color: var(--ink); }
+.empty-state p { font-size: 1rem; line-height: 1.6; max-width: 500px; margin: 0 auto 1.5rem; }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 900px) {
+  .detail-header { grid-template-columns: 1fr auto; }
+  .detail-img-wrap { display: none; }
+  .detail-body { grid-template-columns: 1fr; }
+  .persp-divider { height: 2px; width: auto; margin: 0 1.5rem; }
+  .news-grid { grid-template-columns: 1fr; }
+  .header-center { display: none; }
+}
+@media (max-width: 600px) {
+  .header-inner { padding: 0 1.2rem; }
+  .hero-band, .page { padding-left: 1.2rem; padding-right: 1.2rem; }
+  .detail-header { padding: 1.2rem 1.4rem; }
+  .perspective { padding: 1.4rem; }
+  .logo { font-size: 1.7rem; }
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <a href="#" class="logo" onclick="return false;">DoisLados</a>
+    <div class="header-center">
+      <button class="nav-tab active" onclick="showTab('hoje')">📰 Hoje</button>
+      <button class="nav-tab" onclick="showTab('arquivo')">📅 Arquivo da Semana</button>
+    </div>
+    <div class="header-right">
+      
+      <div class="flag-pills">
+        <div class="flag-pill fp-g"></div>
+        <div class="flag-pill fp-y"></div>
+        <div class="flag-pill fp-b"></div>
+      </div>
+    </div>
+  </div>
+</header>
+
+
+<div class="hero-band">
+  <div class="hero-title">O Brasil em <em>dois lados.</em></div>
+  <div class="hero-sub">As mesmas notícias — perspectiva progressista e conservadora, lado a lado.</div>
+</div>
+
+<div class="page">
+
+  <!-- DETAIL VIEW -->
+  <div id="detail-view">
+    <div class="detail-header">
+      <div class="detail-img-wrap" id="detail-img-wrap"></div>
+      <div>
+        <div class="detail-headline" id="detail-headline"></div>
+        <div class="detail-meta-tag" id="detail-meta"></div>
+      </div>
+      <button class="detail-close" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="detail-body">
+      <div class="perspective">
+        <div class="persp-label left-label">◀ Visão Progressista</div>
+        <div class="persp-summary" id="left-summary"></div>
+        <div class="sources-heading">Fontes progressistas</div>
+        <div id="left-sources"></div>
+      </div>
+      <div class="persp-divider"></div>
+      <div class="perspective">
+        <div class="persp-label right-label">Visão Conservadora ▶</div>
+        <div class="persp-summary" id="right-summary"></div>
+        <div class="sources-heading">Fontes conservadoras</div>
+        <div id="right-sources"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TODAY TAB -->
+  <div class="today-section" id="today-section">
+    <div class="news-section-header">
+      <div class="news-section-title">Hoje — <span id="today-date-label"></span></div>
+      <span class="news-count" id="news-count-label"></span>
+    </div>
+    <div id="status-banner" class="status-banner"></div>
+    <div class="news-grid" id="news-grid"></div>
+  </div>
+
+  <!-- ARCHIVE TAB -->
+  <div class="archive-section" id="archive-section">
+    <div class="news-section-header">
+      <div class="news-section-title">📅 Arquivo da Semana</div>
+      <span class="news-count">7 dias de cobertura</span>
+    </div>
+    <div class="date-bar" id="date-bar"></div>
+    <div id="archive-days"></div>
+  </div>
+
+</div><!-- /page -->
+
+<script>
+// ── STATE ──
+let NEWS_DATA = [];
+let ARCHIVE_DATA = {}; // { "13/03/2026": [...], ... }
+let selectedCard = null;
+let currentTab = 'hoje';
+
+const TEMA_EMOJIS = {
+  'política': '🏛️', 'economia': '📈', 'segurança': '🚔', 'saúde': '🏥',
+  'ambiente': '🌿', 'esportes': '⚽', 'cultura': '🎭', 'educação': '📚',
+  'internacional': '🌍', 'tecnologia': '💻'
+};
+
+// ── PRE-LOADED DATA (today + archive) ──
+const PRELOADED_TODAY = [
+  {
+    headline: "Bolsonaro internado na UTI com broncopneumonia bilateral",
+    lide: "Ex-presidente deu entrada no DF Star com febre, queda de oxigênio e calafrios intensos",
+    tema: "saúde", fonte_principal: "O Tempo / Poder360", data: "13/03/2026 · 12h57",
+    img: "https://images.unsplash.com/photo-1519494026892-80bbd2d6fd0d?w=600&q=80",
+    left_summary: "Agência Brasil e Brasil de Fato cobrem o caso com sobriedade, focando no estado clínico de Bolsonaro e nos boletins médicos. Destacam que o ex-presidente tem histórico de complicações desde o atentado de 2018 e que a internação é procedimento médico adequado à gravidade.",
+    right_summary: "Veja e O Antagonista cobrem a internação com preocupação sobre o impacto político, levantando questões sobre a continuidade do processo judicial no STF. Questionam se o estado de saúde de Bolsonaro poderia interromper julgamentos pendentes.",
+    left_sources: [{name:"Agência Brasil",title:"Bolsonaro internado no DF Star com broncopneumonia",url:"https://agenciabrasil.ebc.com.br"},{name:"Brasil de Fato",title:"Boletim médico informa estado de saúde estável",url:"https://www.brasildefato.com.br"}],
+    right_sources: [{name:"Veja",title:"Bolsonaro na UTI: o que muda no cenário político",url:"https://veja.abril.com.br"},{name:"O Antagonista",title:"Internação de Bolsonaro e os processos no STF",url:"https://www.oantagonista.com"}]
+  },
+  {
+    headline: "Moraes revoga autorização de visita de assessor de Trump a Bolsonaro",
+    lide: "Ministro do STF nega acesso de Darren Beattie ao ex-presidente após reunião com Mauro Vieira",
+    tema: "política", fonte_principal: "CLM Brasil / Observador", data: "13/03/2026 · 10h22",
+    img: "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=600&q=80",
+    left_summary: "Agência Brasil e El País Brasil tratam a decisão de Moraes como legítima proteção à soberania nacional, destacando que o envolvimento de assessores estrangeiros em questões judiciais internas é inaceitável. Fontes diplomáticas citadas elogiam a cautela do ministro.",
+    right_summary: "CNN Brasil e O Antagonista criticam a decisão como extrapolação de poderes do STF. Argumentam que Beattie é assessor de imprensa e que a proibição é precedente perigoso de interferência judicial nas relações diplomáticas.",
+    left_sources: [{name:"Agência Brasil",title:"Moraes revoga visita de americano a Bolsonaro por soberania",url:"https://agenciabrasil.ebc.com.br"},{name:"El País Brasil",title:"STF freia ingerência de assessor de Trump no caso Bolsonaro",url:"https://brasil.elpais.com"}],
+    right_sources: [{name:"CNN Brasil",title:"Moraes revoga autorização de visita após pressão diplomática",url:"https://www.cnnbrasil.com.br"},{name:"O Antagonista",title:"Moraes nega acesso de americano e coloca Brasil em rota de colisão com EUA",url:"https://www.oantagonista.com"}]
+  },
+  {
+    headline: "Senado instala comissão para investigar Moraes e Toffoli no STF",
+    lide: "35 senadores apoiam iniciativa que mira conduta dos ministros que julgaram Bolsonaro",
+    tema: "política", fonte_principal: "Observador / Gazeta do Povo", data: "12/03/2026 · 18h41",
+    img: "https://images.unsplash.com/photo-1555848962-6e79363ec58f?w=600&q=80",
+    left_summary: "Agência Brasil e El País Brasil tratam a comissão como retaliação política da oposição ao STF, alertando para o risco de interferência do Legislativo na independência do Judiciário. Analistas progressistas classificam o movimento como manobra eleitoreira.",
+    right_summary: "Veja, CNN Brasil e O Globo cobrem a criação da comissão como legítimo exercício de fiscalização parlamentar. Destacam que 35 senadores favoráveis representa força política real e que os ministros devem prestar contas públicas.",
+    left_sources: [{name:"Agência Brasil",title:"Comissão no Senado ameaça independência do STF",url:"https://agenciabrasil.ebc.com.br"},{name:"El País Brasil",title:"Senado x STF: risco à separação de poderes?",url:"https://brasil.elpais.com"}],
+    right_sources: [{name:"CNN Brasil",title:"Senado cria comissão para investigar Moraes e Toffoli",url:"https://www.cnnbrasil.com.br"},{name:"Veja",title:"35 senadores exigem accountability dos ministros do STF",url:"https://veja.abril.com.br"}]
+  },
+  {
+    headline: "Governo zera PIS/Cofins sobre combustíveis para conter alta de preços",
+    lide: "Lula culpa guerras internacionais e anuncia suspensão emergencial de impostos federais",
+    tema: "economia", fonte_principal: "CNN Brasil / Observador", data: "12/03/2026 · 18h21",
+    img: "https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=600&q=80",
+    left_summary: "Agência Brasil e Brasil de Fato elogiam a medida como proteção ao trabalhador diante da crise global, ressaltando que o governo age para blindar o poder de compra das famílias. Destacam guerras no Oriente Médio e Europa como causas externas.",
+    right_summary: "Folha de S.Paulo e O Globo questionam o impacto fiscal da suspensão, alertando para risco ao equilíbrio orçamentário. Economistas ouvidos criticam a medida como paliativa e eleitoral, sem resolver a estrutura de custos.",
+    left_sources: [{name:"Agência Brasil",title:"Governo zera PIS/Cofins para conter preços dos combustíveis",url:"https://agenciabrasil.ebc.com.br"},{name:"Brasil de Fato",title:"Medida protege bolso do trabalhador da crise global",url:"https://www.brasildefato.com.br"}],
+    right_sources: [{name:"Folha de S.Paulo",title:"Isenção alivia preços mas preocupa equilíbrio fiscal",url:"https://www.folha.uol.com.br"},{name:"O Globo",title:"Medida emergencial sobre combustíveis tem prazo indefinido",url:"https://oglobo.globo.com"}]
+  },
+  {
+    headline: "Tarcísio ameaça romper contrato da obra BRT-ABC por atrasos",
+    lide: "Governador aponta descumprimento do cronograma pela concessionária Next Mobilidade",
+    tema: "política", fonte_principal: "Diário do Grande ABC", data: "13/03/2026 · 08h55",
+    img: "https://images.unsplash.com/photo-1544620347-c4fd4a3d5957?w=600&q=80",
+    left_summary: "Carta Capital questiona se a postura de Tarcísio é técnica ou eleitoral, levantando que o atraso pode ter relação com licenças ambientais bloqueadas. Analistas de esquerda lembram que Tarcísio usa SP como vitrine para 2026.",
+    right_summary: "CNN Brasil e Veja tratam a postura de Tarcísio como firme e correta diante de uma concessionária que não cumpre metas. Destacam a postura executiva do governador e a importância do BRT-ABC para a mobilidade metropolitana.",
+    left_sources: [{name:"Carta Capital",title:"Tarcísio e o BRT: gestão ou palanque?",url:"https://www.cartacapital.com.br"},{name:"Brasil de Fato",title:"Entraves ambientais travam obra no ABC Paulista",url:"https://www.brasildefato.com.br"}],
+    right_sources: [{name:"CNN Brasil",title:"Tarcísio ameaça romper contrato por atraso no BRT-ABC",url:"https://www.cnnbrasil.com.br"},{name:"Folha de S.Paulo",title:"Governo SP cobra Next Mobilidade por obra atrasada",url:"https://www.folha.uol.com.br"}]
+  },
+  {
+    headline: "Investigação aponta ligação entre Banco Master e o PCC",
+    lide: "Relatório parlamentar revela suspeita de conexão entre instituição financeira e crime organizado",
+    tema: "segurança", fonte_principal: "Gazeta do Povo", data: "12/03/2026 · 17h16",
+    img: "https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?w=600&q=80",
+    left_summary: "Brasil de Fato e Agência Brasil destacam a necessidade de regulação mais rígida do sistema financeiro e criticam a falta de supervisão do Banco Central sobre instituições menores. O caso reforça a pauta de tributação de bancos.",
+    right_summary: "O Antagonista e Gazeta do Povo tratam o caso como revelação explosiva que expõe falhas do governo em combater o crime organizado infiltrado nas finanças. Cobram investigação ampla e criticam a lentidão do Ministério da Justiça.",
+    left_sources: [{name:"Brasil de Fato",title:"Caso Master expõe necessidade de regular sistema financeiro",url:"https://www.brasildefato.com.br"},{name:"Agência Brasil",title:"CPMI investiga ligação entre banco e facção criminosa",url:"https://agenciabrasil.ebc.com.br"}],
+    right_sources: [{name:"O Antagonista",title:"Banco Master e PCC: o escândalo que o governo tenta abafar",url:"https://www.oantagonista.com"},{name:"Gazeta do Povo",title:"Investigação sobre Banco Master e o PCC avança no Congresso",url:"https://www.gazetadopovo.com.br"}]
+  },
+  {
+    headline: "Eleições 2026: Lula e Flávio Bolsonaro lideram intenções de voto",
+    lide: "Com 205 dias para o 1º turno, disputa presidencial esquenta com janela partidária aberta",
+    tema: "política", fonte_principal: "Gazeta do Povo / Metrópoles", data: "13/03/2026 · 07h02",
+    img: "https://images.unsplash.com/photo-1578496479531-32e296d5c6e1?w=600&q=80",
+    left_summary: "Agência Brasil e Carta Capital ressaltam que Lula lidera pesquisas mesmo com desgaste, apontando que os programas sociais mantêm base fiel. Analistas progressistas destacam que a candidatura Flávio Bolsonaro ainda não decolou na prática.",
+    right_summary: "Gazeta do Povo e Veja destacam crescimento de Flávio e Tarcísio nas pesquisas, argumentando que o eleitorado conservador está mais organizado do que em 2022. Apontam que o peso da economia pode definir o pleito.",
+    left_sources: [{name:"Carta Capital",title:"Lula mantém liderança mesmo com desgaste de governo",url:"https://www.cartacapital.com.br"},{name:"Agência Brasil",title:"Pesquisa eleitoral aponta favoritismo de Lula para 2026",url:"https://agenciabrasil.ebc.com.br"}],
+    right_sources: [{name:"Gazeta do Povo",title:"Flávio Bolsonaro consolida candidatura presidencial",url:"https://www.gazetadopovo.com.br"},{name:"Veja",title:"Eleições 2026: direita mais organizada que em 2022",url:"https://veja.abril.com.br"}]
+  },
+  {
+    headline: "Congresso mantém impasse sobre fim da escala 6x1",
+    lide: "PEC que reduziria jornada de trabalho enfrenta resistência no Senado após aprovação na Câmara",
+    tema: "economia", fonte_principal: "CNN Brasil", data: "12/03/2026 · 16h33",
+    img: "https://images.unsplash.com/photo-1521737604893-d14cc237f11d?w=600&q=80",
+    left_summary: "Brasil de Fato e Agência Brasil defendem a mudança como conquista histórica dos trabalhadores, ressaltando que o Brasil tem uma das maiores jornadas de trabalho do mundo. Sindicatos estimam melhora na qualidade de vida de 30 milhões de pessoas.",
+    right_summary: "Folha de S.Paulo e O Globo alertam para o impacto nos setores de serviços e varejo, que dependem da escala 6x1. Economistas ouvidos apontam risco de informalidade e perda de empregos em setores intensivos em mão-de-obra.",
+    left_sources: [{name:"Brasil de Fato",title:"Fim da escala 6x1 é conquista histórica dos trabalhadores",url:"https://www.brasildefato.com.br"},{name:"Agência Brasil",title:"PEC da jornada segue para Senado com apoio popular",url:"https://agenciabrasil.ebc.com.br"}],
+    right_sources: [{name:"Folha de S.Paulo",title:"Fim do 6x1 pode custar empregos no setor de serviços",url:"https://www.folha.uol.com.br"},{name:"O Globo",title:"Impacto do 6x1 no comércio e varejo preocupa economistas",url:"https://oglobo.globo.com"}]
+  },
+  {
+    headline: "Palmeiras é tetracampeão paulista com Abel Ferreira",
+    lide: "Verdão conquista o quarto Paulistão consecutivo e consolida hegemonia no futebol estadual",
+    tema: "esportes", fonte_principal: "Observador / UOL", data: "12/03/2026 · 22h07",
+    img: "https://images.unsplash.com/photo-1431324155629-1a6deb1dec8d?w=600&q=80",
+    left_summary: "A imprensa progressista e esportiva celebra o desempenho de Abel Ferreira, destacando a base jovem formada na academia do clube. Analistas ressaltam que o tetracampeonato é resultado de projeto de longo prazo com continuidade técnica.",
+    right_summary: "Imprensa conservadora também celebra o título, mas aponta que a hegemonia do Palmeiras é preocupante para a competitividade do futebol paulista. Colunistas criticam a falta de investimento de outros clubes na disputa estadual.",
+    left_sources: [{name:"UOL Esporte",title:"Palmeiras é tetra com goleada na decisão",url:"https://uol.com.br/esporte"},{name:"Agência Brasil",title:"Abel Ferreira faz história com quarto título consecutivo",url:"https://agenciabrasil.ebc.com.br"}],
+    right_sources: [{name:"Gazeta Esportiva",title:"Palmeiras campeão, mas hegemonia empobrece o Paulistão",url:"https://www.gazetaesportiva.com"},{name:"Lance!",title:"Tetracampeonato do Palmeiras: número 1 do Brasil",url:"https://www.lance.com.br"}]
+  },
+  {
+    headline: "Lula assina MPs de apoio a vítimas de enchentes em Minas Gerais",
+    lide: "Governo federal libera R$ 1,2 bilhão em ajuda emergencial após chuvas devastadoras no estado",
+    tema: "ambiente", fonte_principal: "Agência Brasil", data: "06/03/2026 · 19h19",
+    img: "https://images.unsplash.com/photo-1547683905-f686c993aae5?w=600&q=80",
+    left_summary: "Agência Brasil e Brasil de Fato elogiam a agilidade do governo na resposta à crise climática, destacando os R$ 1,2 bilhão destinados às famílias afetadas. Especialistas em clima citados vinculam a intensidade das chuvas às mudanças climáticas.",
+    right_summary: "O Globo e Gazeta do Povo questionam a eficiência da resposta, apontando que municípios relatam atrasos na chegada dos recursos. Cobram fiscalização rigorosa dos gastos emergenciais e criticam falta de política permanente de prevenção.",
+    left_sources: [{name:"Agência Brasil",title:"Lula assina MPs de R$1,2 bi para vítimas de chuvas em MG",url:"https://agenciabrasil.ebc.com.br"},{name:"Brasil de Fato",title:"Enchentes em MG expõem urgência da agenda climática",url:"https://www.brasildefato.com.br"}],
+    right_sources: [{name:"O Globo",title:"Municípios relatam atraso no recebimento de verbas emergenciais",url:"https://oglobo.globo.com"},{name:"Gazeta do Povo",title:"R$1,2 bilhão para MG: onde vai o dinheiro das emergências?",url:"https://www.gazetadopovo.com.br"}]
+  },
+  {
+    headline: "Copom deve cortar Selic para 14,75% na reunião de março",
+    lide: "BC sinaliza redução de 0,25 ponto percentual na taxa básica após meses sem mexer nos juros",
+    tema: "economia", fonte_principal: "Agência Brasil / Focus", data: "13/03/2026 · 09h15",
+    img: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80",
+    left_summary: "Brasil de Fato e Agência Brasil celebram o início do ciclo de queda como alívio para famílias endividadas e para micro e pequenas empresas. Destacam que a queda dos juros destrará investimentos represados e aquecer o emprego.",
+    right_summary: "Folha e Valor Econômico alertam que o corte mínimo de 0,25pp é insuficiente frente ao nível restritivo atual. Economistas ouvidos argumentam que a hesitação do BC encarece o crédito e freia o crescimento em ano eleitoral.",
+    left_sources: [{name:"Agência Brasil",title:"Copom inicia corte da Selic para aliviar endividamento das famílias",url:"https://agenciabrasil.ebc.com.br"},{name:"Brasil de Fato",title:"Queda dos juros é conquista da política econômica de Lula",url:"https://www.brasildefato.com.br"}],
+    right_sources: [{name:"Folha de S.Paulo",title:"Corte mínimo da Selic frustra mercado e analistas",url:"https://www.folha.uol.com.br"},{name:"Valor Econômico",title:"BC tímido: 0,25pp é pouco para retomar crescimento",url:"https://valor.globo.com"}]
+  },
+  {
+    headline: "PEC da Anistia avança no Congresso com 35 assinaturas no Senado",
+    lide: "Texto perdoaria envolvidos nos atos de 8 de janeiro e poderia tornar Bolsonaro elegível",
+    tema: "política", fonte_principal: "Congresso em Foco", data: "11/03/2026 · 15h27",
+    img: "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=600&q=80",
+    left_summary: "El País Brasil e Carta Capital tratam a PEC como ameaça à democracia e à responsabilização dos autores da tentativa de golpe. Constitucionalistas progressistas alertam que perdoar os envolvidos no 8 de janeiro cria precedente gravíssimo.",
+    right_summary: "Gazeta do Povo e O Antagonista defendem a anistia como recurso legítimo de reconciliação nacional, argumentando que as punições aplicadas pelo STF foram desproporcionais. Veem a PEC como oportunidade de pacificação política.",
+    left_sources: [{name:"El País Brasil",title:"PEC da Anistia representa ameaça à democracia brasileira",url:"https://brasil.elpais.com"},{name:"Carta Capital",title:"Anistia do 8 de janeiro abriria precedente golpista",url:"https://www.cartacapital.com.br"}],
+    right_sources: [{name:"Gazeta do Povo",title:"PEC da Anistia: o caminho para a reconciliação nacional",url:"https://www.gazetadopovo.com.br"},{name:"O Antagonista",title:"35 senadores assinam pela anistia dos condenados do 8J",url:"https://www.oantagonista.com"}]
+  },
+  {
+    headline: "EUA flexibilizam sanções ao petróleo russo e mercados reagem",
+    lide: "Washington retira parte das restrições ao setor energético da Rússia em meio a negociações de paz",
+    tema: "internacional", fonte_principal: "CNN Brasil / Reuters", data: "13/03/2026 · 11h30",
+    img: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&q=80",
+    left_summary: "El País Brasil e The Intercept cobrem a flexibilização como sinal de realinhamento geopolítico preocupante, argumentando que a medida beneficia a Rússia sem garantias de paz efetiva. Analistas progressistas temem impacto no preço do petróleo no Brasil.",
+    right_summary: "CNN Brasil e Veja tratam a decisão como movimento pragmático dos EUA para estabilizar os mercados de energia globais. Analistas conservadores ressaltam que a queda do petróleo beneficiaria os combustíveis no Brasil.",
+    left_sources: [{name:"El País Brasil",title:"EUA flexibilizam sanções russas sem garantias de paz",url:"https://brasil.elpais.com"},{name:"The Intercept",title:"Recuo americano nas sanções fortalece Putin",url:"https://theintercept.com/brasil"}],
+    right_sources: [{name:"CNN Brasil",title:"EUA amenizam sanções ao petróleo russo para estabilizar mercados",url:"https://www.cnnbrasil.com.br"},{name:"Veja",title:"Queda do petróleo pode aliviar combustíveis no Brasil",url:"https://veja.abril.com.br"}]
+  },
+  {
+    headline: "Haddad defende reforma tributária como atrativo para investimentos",
+    lide: "Ministro da Fazenda apresenta cronograma de implementação do novo sistema fiscal",
+    tema: "economia", fonte_principal: "Congresso em Foco / Valor", data: "12/03/2026 · 14h20",
+    img: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&q=80",
+    left_summary: "Agência Brasil e Brasil de Fato destacam que a reforma tributária simplificará o sistema mais complexo do mundo, reduzindo custos para pequenas empresas. Haddad é citado como arquiteto de uma mudança histórica que nenhum governo anterior conseguiu implementar.",
+    right_summary: "Folha e Gazeta do Povo levantam preocupações com alíquotas do novo IVA dual que podem ser maiores que o prometido. Empresários do Simples Nacional relatam que foram prejudicados na regulamentação e cobram revisão do texto.",
+    left_sources: [{name:"Agência Brasil",title:"Reforma tributária vai simplificar sistema e atrair investimentos",url:"https://agenciabrasil.ebc.com.br"},{name:"Brasil de Fato",title:"IVA brasileiro beneficia pequenas empresas e consumidores",url:"https://www.brasildefato.com.br"}],
+    right_sources: [{name:"Folha de S.Paulo",title:"Alíquotas do IVA podem ser maiores que o prometido",url:"https://www.folha.uol.com.br"},{name:"Gazeta do Povo",title:"Simples Nacional perde benefícios com nova reforma tributária",url:"https://www.gazetadopovo.com.br"}]
+  },
+  {
+    headline: "Oscar 2026: filme brasileiro 'O Agente Secreto' concorre em quatro categorias",
+    lide: "Produção nacional recebe indicações históricas incluindo Melhor Fotografia com Adolpho Veloso",
+    tema: "cultura", fonte_principal: "NSC Notícias / UOL", data: "12/03/2026 · 20h00",
+    img: "https://images.unsplash.com/photo-1485846234645-a62644f84728?w=600&q=80",
+    left_summary: "Agência Brasil e Brasil de Fato celebram as indicações como resultado de investimento público em cultura via Lei Rouanet e Ancine. Destacam que o filme retrata a resistência à ditadura e tem mensagem de valorização da democracia.",
+    right_summary: "Folha de S.Paulo e O Globo celebram o feito técnico e artístico sem entrar no mérito político. Colunistas conservadores questionam se a narrativa do filme não seria uma visão parcial do período histórico abordado.",
+    left_sources: [{name:"Agência Brasil",title:"Cinema brasileiro brilha no Oscar com quatro indicações",url:"https://agenciabrasil.ebc.com.br"},{name:"Brasil de Fato",title:"'O Agente Secreto' e o cinema que resiste",url:"https://www.brasildefato.com.br"}],
+    right_sources: [{name:"Folha de S.Paulo",title:"Filme brasileiro faz história no Oscar 2026",url:"https://www.folha.uol.com.br"},{name:"O Globo",title:"Indicações ao Oscar mostram força do cinema nacional",url:"https://oglobo.globo.com"}]
+  }
+];
+
+// ── ARCHIVE DATA (past 7 days pre-loaded) ──
+const PRELOADED_ARCHIVE = {
+  "11/03/2026": [
+    { headline: "Posse de José Antonio Kast como presidente do Chile gera reações no Brasil", lide: "Eleição da direita chilena provoca debate sobre posicionamento diplomático brasileiro", tema: "internacional", fonte_principal: "Gazeta do Povo", data: "11/03/2026 · 15h16", img: "https://images.unsplash.com/photo-1526778548025-fa2f459cd5c1?w=600&q=80", left_summary: "El País Brasil e Carta Capital alertam para o avanço da direita na América Latina e o risco de isolamento diplomático do Brasil. O PT emite nota dizendo que o Brasil seguirá apoiando movimentos progressistas na região.", right_summary: "Gazeta do Povo e O Antagonista celebram a vitória de Kast como sinal de rejúvescência conservadora no continente. Analistas da direita veem como oportunidade de fortalecer laços comerciais com o Chile sob nova gestão.", left_sources: [{name:"El País Brasil",title:"Kast assume Chile e preocupa progressistas na região",url:"https://brasil.elpais.com"},{name:"Carta Capital",title:"Direita avança na América Latina: o que esperar?",url:"https://www.cartacapital.com.br"}], right_sources: [{name:"Gazeta do Povo",title:"Kast presidente: Chile escolhe o caminho do desenvolvimento",url:"https://www.gazetadopovo.com.br"},{name:"O Antagonista",title:"Vitória de Kast abre nova fase para relações bilaterais",url:"https://www.oantagonista.com"}] },
+    { headline: "Caso Master: Haddad diz que fraude era enorme e Banco Central investigava", lide: "Ministro defende postura do governo e critica gestão da instituição financeira", tema: "economia", fonte_principal: "Congresso em Foco", data: "11/03/2026 · 14h35", img: "https://images.unsplash.com/photo-1501167786227-4cba60f6d58f?w=600&q=80", left_summary: "Agência Brasil e Brasil de Fato destacam a fala de Haddad como transparente e responsável, reforçando que o governo não pode ser responsabilizado por fraudes praticadas pela gestão anterior do banco. Creditam ao BC a boa atuação regulatória.", right_summary: "Veja e O Antagonista questionam por que o governo demorou tanto para agir se o BC já investigava. Cobram que o dinheiro dos poupadores seja devolvido e criticam a lentidão das autoridades financeiras.", left_sources: [{name:"Agência Brasil",title:"Haddad: governo agiu assim que tomou ciência da fraude Master",url:"https://agenciabrasil.ebc.com.br"},{name:"Brasil de Fato",title:"Caso Master expõe fragilidade na regulação financeira privada",url:"https://www.brasildefato.com.br"}], right_sources: [{name:"Veja",title:"Haddad minimiza responsabilidade do governo no caso Master",url:"https://veja.abril.com.br"},{name:"O Antagonista",title:"Onde estava o BC enquanto o Master fraudava poupadores?",url:"https://www.oantagonista.com"}] },
+    { headline: "Lula cancela viagem e fica no Brasil para acompanhar crise climática em MG", lide: "Presidente suspende agenda internacional após enchentes atingirem mais de 30 municípios mineiros", tema: "ambiente", fonte_principal: "Agência Brasil", data: "11/03/2026 · 12h41", img: "https://images.unsplash.com/photo-1547683905-f686c993aae5?w=600&q=80", left_summary: "Agência Brasil elogia a decisão de Lula como prioridade correta diante da emergência climática. Climatologistas ouvidos reforçam que eventos extremos serão mais frequentes e cobram política permanente de prevenção.", right_summary: "Gazeta do Povo questiona se o cancelamento não seria apenas oportunidade de visibilidade eleitoral, apontando que viagens presidenciais têm representantes habilitados. Pedem que o governo apresente plano permanente e não só resposta de emergência.", left_sources: [{name:"Agência Brasil",title:"Lula cancela agenda para liderar resposta às enchentes em MG",url:"https://agenciabrasil.ebc.com.br"},{name:"Brasil de Fato",title:"Crise climática em MG demanda resposta federal imediata",url:"https://www.brasildefato.com.br"}], right_sources: [{name:"Gazeta do Povo",title:"Lula cancela viagem: gestão da crise ou marketing político?",url:"https://www.gazetadopovo.com.br"},{name:"Folha de S.Paulo",title:"Governo anuncia medidas emergenciais para MG",url:"https://www.folha.uol.com.br"}] }
+  ],
+  "10/03/2026": [
+    { headline: "Banco Central confirma início de cortes da Selic em reunião de março", lide: "Ata do Copom sinaliza ciclo de queda gradual com cautela fiscal", tema: "economia", fonte_principal: "Agência Brasil / Valor", data: "10/03/2026 · 16h00", img: "https://images.unsplash.com/photo-1611974789855-9c2a0a7236a3?w=600&q=80", left_summary: "Agência Brasil celebra o início do ciclo como alívio para famílias endividadas, resultado da política fiscal responsável do governo Lula. Economistas progressistas destacam que a queda dos juros destrará investimentos na indústria nacional.", right_summary: "Valor Econômico e Folha ressaltam que o BC foi cauteloso demais e que a queda deveria ter começado antes. Analistas conservadores criticam o nível ainda elevado da Selic e o impacto no crédito para pequenas empresas.", left_sources: [{name:"Agência Brasil",title:"Copom confirma corte da Selic na reunião de março",url:"https://agenciabrasil.ebc.com.br"},{name:"Brasil de Fato",title:"Queda dos juros é vital para retomada econômica popular",url:"https://www.brasildefato.com.br"}], right_sources: [{name:"Valor Econômico",title:"BC hesitante: queda dos juros deveria ter vindo antes",url:"https://valor.globo.com"},{name:"Folha de S.Paulo",title:"Selic ainda alta compromete crédito e crescimento em 2026",url:"https://www.folha.uol.com.br"}] },
+    { headline: "CPI do INSS: depoimento de ex-secretário revela fraude milionária", lide: "Investigação apura desfalque de R$ 6,3 bilhões em aposentadorias e benefícios previdenciários", tema: "economia", fonte_principal: "Congresso em Foco", data: "10/03/2026 · 11h08", img: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&q=80", left_summary: "Agência Brasil cobre o depoimento de forma factual, destacando que a investigação foi iniciada durante o governo Lula como sinal de transparência. Defendem que a CPI segue curso correto e que os culpados serão responsabilizados.", right_summary: "Veja e Gazeta do Povo apontam que o esquema operou por anos sem que o governo percebesse ou agisse. Exigem responsabilização de nomes dentro do governo atual e questionam se houve conivência com o esquema.", left_sources: [{name:"Agência Brasil",title:"CPI do INSS ouve ex-secretário sobre fraude bilionária",url:"https://agenciabrasil.ebc.com.br"},{name:"Carta Capital",title:"Fraude no INSS: governo Lula abre investigação inédita",url:"https://www.cartacapital.com.br"}], right_sources: [{name:"Veja",title:"CPI do INSS: como R$6,3 bi sumiram sem que o governo visse",url:"https://veja.abril.com.br"},{name:"Gazeta do Povo",title:"INSS: escândalo diz muito sobre a gestão pública brasileira",url:"https://www.gazetadopovo.com.br"}] },
+    { headline: "WhatsApp anuncia novo recurso de privacidade avançada para usuários", lide: "Ferramenta permite bloquear capturas de tela em conversas individuais e grupos", tema: "tecnologia", fonte_principal: "Portal RBV / Tecnoblog", data: "10/03/2026 · 09h00", img: "https://images.unsplash.com/photo-1603969072881-b0fc7f3d77d7?w=600&q=80", left_summary: "Progressistas e especialistas em direitos digitais celebram o avanço em privacidade como proteção contra vigilância e vazamento de dados sensíveis. Organizações de direitos humanos ressaltam importância para jornalistas e ativistas.", right_summary: "Conservadores e especialistas em segurança questionam se o recurso não dificultará investigações de crimes cometidos via WhatsApp. Autoridades de segurança pública manifestam preocupação com o impacto no combate ao crime organizado digital.", left_sources: [{name:"Tecnoblog",title:"WhatsApp protege conversas com novo bloqueio de screenshots",url:"https://tecnoblog.net"},{name:"Brasil de Fato",title:"Privacidade digital avança com novo recurso do WhatsApp",url:"https://www.brasildefato.com.br"}], right_sources: [{name:"CNN Brasil",title:"Novo WhatsApp pode dificultar investigações policiais",url:"https://www.cnnbrasil.com.br"},{name:"Gazeta do Povo",title:"Privacidade digital ou escudo para criminosos?",url:"https://www.gazetadopovo.com.br"}] }
+  ],
+  "09/03/2026": [
+    { headline: "Alessandro Vieira e Eduardo Bolsonaro trocam farpas sobre CPI do STF", lide: "Senador e ex-deputado protagonizam briga nas redes sobre requerimento de comissão parlamentar", tema: "política", fonte_principal: "TMC / Gazeta do Povo", data: "09/03/2026 · 20h00", img: "https://images.unsplash.com/photo-1529107386315-e1a2ed48a620?w=600&q=80", left_summary: "El País Brasil e Carta Capital apontam que a briga expõe a tentativa da direita de atacar o STF com instrumentos parlamentares. Vieira é visto como mediador que manteve a defesa das instituições democráticas.", right_summary: "Gazeta do Povo e O Antagonista mostram que o embate evidencia a determinação da oposição em responsabilizar Moraes e Toffoli. A troca de farpas é lida como sinal de que o Congresso está cada vez mais disposto a enfrentar o Judiciário.", left_sources: [{name:"El País Brasil",title:"Oposição usa redes para atacar STF sem argumento jurídico",url:"https://brasil.elpais.com"},{name:"Carta Capital",title:"Vieira e o esforço de preservar instituições democráticas",url:"https://www.cartacapital.com.br"}], right_sources: [{name:"Gazeta do Povo",title:"Eduardo Bolsonaro e a batalha por responsabilizar o STF",url:"https://www.gazetadopovo.com.br"},{name:"O Antagonista",title:"Congresso dá sinal claro: paciência com o STF acabou",url:"https://www.oantagonista.com"}] },
+    { headline: "Isenção do IR para quem ganha até R$5 mil é sancionada por Lula", lide: "Lei entra em vigor com compensação por tributação progressiva de rendimentos acima de R$600 mil/ano", tema: "economia", fonte_principal: "Agência Brasil / A União", data: "09/03/2026 · 14h00", img: "https://images.unsplash.com/photo-1554224155-8d04cb21cd6c?w=600&q=80", left_summary: "Agência Brasil e Brasil de Fato celebram a medida como a maior redistribuição de renda via sistema tributário na história recente do Brasil. Especialistas progressistas destacam que 90% dos declarantes serão beneficiados.", right_summary: "Gazeta do Povo e Folha questionam o impacto fiscal da medida, alertando que o aumento de impostos sobre a faixa de R$600 mil pode assustar investidores. Economistas conservadores temem efeito negativo sobre crescimento.", left_sources: [{name:"Agência Brasil",title:"Isenção do IR é sancionada: 40 milhões de brasileiros beneficiados",url:"https://agenciabrasil.ebc.com.br"},{name:"Brasil de Fato",title:"Isenção do IR é histórica reforma tributária popular",url:"https://www.brasildefato.com.br"}], right_sources: [{name:"Gazeta do Povo",title:"Isenção do IR: impacto fiscal preocupa mercado",url:"https://www.gazetadopovo.com.br"},{name:"Folha de S.Paulo",title:"Medida pode afastar investidores por tributação extra",url:"https://www.folha.uol.com.br"}] }
+  ],
+  "08/03/2026": [
+    { headline: "Dia Internacional da Mulher: marchas e protestos em todo o Brasil", lide: "Manifestações pedem fim da violência doméstica, igualdade salarial e representação política", tema: "cultura", fonte_principal: "Agência Brasil / G1", data: "08/03/2026 · 18h00", img: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=600&q=80", left_summary: "Agência Brasil e Brasil de Fato cobrem os protestos com entusiasmo, destacando a diversidade dos movimentos feministas e as conquistas ainda pendentes. Relatam que 52% das mulheres já sofreram algum tipo de violência doméstica.", right_summary: "Gazeta do Povo e O Globo cobrem as marchas com destaque para a pluralidade de mulheres que não se identificam com os grupos organizadores. Colunistas conservadores argumentam que os movimentos são partidarizados e excluem mulheres de direita.", left_sources: [{name:"Agência Brasil",title:"Marchas do 8M exigem fim da violência e mais representação",url:"https://agenciabrasil.ebc.com.br"},{name:"Brasil de Fato",title:"Dia da Mulher: Brasil ainda tem muito a avançar em igualdade",url:"https://www.brasildefato.com.br"}], right_sources: [{name:"O Globo",title:"8M no Brasil: diferentes grupos, diferentes pautas feministas",url:"https://oglobo.globo.com"},{name:"Gazeta do Povo",title:"8M: movimentos feministas deveriam incluir mais mulheres",url:"https://www.gazetadopovo.com.br"}] },
+    { headline: "Polícia Federal apreende R$ 2,3 bilhões em operação contra crime organizado", lide: "Operação Fronteiras fechadas foca em lavagem de dinheiro do tráfico internacional", tema: "segurança", fonte_principal: "Poder360 / CNN Brasil", data: "08/03/2026 · 10h30", img: "https://images.unsplash.com/photo-1589578527966-fdac0f44566c?w=600&q=80", left_summary: "Agência Brasil e Brasil de Fato elogiam a operação como resultado do investimento do governo Lula na Polícia Federal, com aumento de 64% nas apreensões desde 2022. Destacam a cooperação internacional como diferencial da nova gestão.", right_summary: "Gazeta do Povo e O Antagonista reconhecem o êxito da operação, mas questionam por que as fronteiras ainda apresentam brechas. Cobram política de segurança de fronteiras mais efetiva e questionam lentidão da Justiça em julgar os presos.", left_sources: [{name:"Agência Brasil",title:"PF apreende R$2,3 bi em operação contra lavagem de dinheiro",url:"https://agenciabrasil.ebc.com.br"},{name:"Brasil de Fato",title:"PF sob Lula bate recordes no combate ao crime organizado",url:"https://www.brasildefato.com.br"}], right_sources: [{name:"Gazeta do Povo",title:"Operação PF: sucesso, mas fronteiras seguem vulneráveis",url:"https://www.gazetadopovo.com.br"},{name:"O Antagonista",title:"Apreensão bilionária: e os criminosos presos em 2022, onde estão?",url:"https://www.oantagonista.com"}] }
+  ],
+  "07/03/2026": [
+    { headline: "Greve de professores estaduais paralisa escolas em 12 estados", lide: "Categoria reivindica reajuste salarial de 15% e melhorias nas condições de trabalho", tema: "educação", fonte_principal: "Agência Brasil / G1", data: "07/03/2026 · 13h00", img: "https://images.unsplash.com/photo-1580582932707-520aed937b7b?w=600&q=80", left_summary: "Brasil de Fato e Agência Brasil apoiam a greve como legítima reivindicação por valorização da educação, responsabilizando governos estaduais pelo congelamento salarial. Citam que professores públicos ganham em média 30% menos que a média da OCDE.", right_summary: "Folha e O Globo alertam para o impacto das greves nas crianças e adolescentes, especialmente os de baixa renda. Colunistas conservadores apontam que greves recorrentes na educação pública refletem má gestão dos sindicatos.", left_sources: [{name:"Brasil de Fato",title:"Professores em greve: valorização da educação é urgente",url:"https://www.brasildefato.com.br"},{name:"Agência Brasil",title:"Paralisação de professores atinge 12 estados brasileiros",url:"https://agenciabrasil.ebc.com.br"}], right_sources: [{name:"Folha de S.Paulo",title:"Greve de professores prejudica alunos mais pobres",url:"https://www.folha.uol.com.br"},{name:"O Globo",title:"Paralisação nas escolas públicas: quem paga a conta?",url:"https://oglobo.globo.com"}] },
+    { headline: "Brasil registra queda de 8% no desmatamento na Amazônia em 2025", lide: "INPE divulga dados do PRODES mostrando redução de área desmatada no bioma", tema: "ambiente", fonte_principal: "Agência Brasil / INPE", data: "07/03/2026 · 10h00", img: "https://images.unsplash.com/photo-1516026672322-bc52d61a55d5?w=600&q=80", left_summary: "Agência Brasil e Brasil de Fato celebram a queda como resultado direto das políticas ambientais do governo Lula, com fortalecimento do IBAMA e da Funai. Destacam que o Brasil volta a ser reconhecido internacionalmente na agenda climática.", right_summary: "Folha e Gazeta do Povo reconhecem a queda, mas apontam que ainda está acima da meta para atingir desmatamento zero até 2030. Economistas rurais cobram que a proteção ambiental não comprometa a produtividade do agronegócio.", left_sources: [{name:"Agência Brasil",title:"Desmatamento na Amazônia cai 8% em 2025, mostra INPE",url:"https://agenciabrasil.ebc.com.br"},{name:"Brasil de Fato",title:"Política ambiental de Lula reduz desmatamento no bioma",url:"https://www.brasildefato.com.br"}], right_sources: [{name:"Folha de S.Paulo",title:"Queda de 8% é insuficiente para meta de desmatamento zero",url:"https://www.folha.uol.com.br"},{name:"Gazeta do Povo",title:"Desmatamento cai, mas pressão sobre o agro é injusta",url:"https://www.gazetadopovo.com.br"}] }
+  ]
+};
+
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  NEWS_DATA = PRELOADED_TODAY;
+  ARCHIVE_DATA = PRELOADED_ARCHIVE;
+  updateTodayLabel();
+  renderGrid();
+  renderArchive();
+});
+
+function updateTodayLabel() {
+  const hoje = new Date();
+  const opts = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+  document.getElementById('today-date-label').textContent = hoje.toLocaleDateString('pt-BR', opts);
+  document.getElementById('news-count-label').textContent = NEWS_DATA.length + ' notícias';
+}
+
+function showTab(tab) {
+  currentTab = tab;
+  closeDetail();
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+  if (tab === 'hoje') {
+    document.getElementById('today-section').classList.remove('hidden');
+    document.getElementById('archive-section').classList.remove('active');
+  } else {
+    document.getElementById('today-section').classList.add('hidden');
+    document.getElementById('archive-section').classList.add('active');
+  }
+}
+
+function showBanner(type, msg) {
+  const b = document.getElementById('status-banner');
+  b.className = 'status-banner ' + type;
+  b.textContent = msg;
+  if (type === 'success' || type === 'info') setTimeout(() => { b.className = 'status-banner'; }, 6000);
+}
+
+// ── REFRESH COM CLAUDE API + WEB SEARCH ──
+function renderGrid() {
+  const grid = document.getElementById('news-grid');
+  grid.innerHTML = '';
+  if (!NEWS_DATA.length) {
+    grid.innerHTML = '<div class="empty-state"><div class="emoji">📰</div><h3>Sem notícias carregadas</h3><p>Sem notícias disponíveis.</p></div>';
+    return;
+  }
+  NEWS_DATA.forEach((a, i) => {
+    const card = document.createElement('div');
+    card.className = 'news-card' + (selectedCard === i ? ' active' : '');
+    card.style.animationDelay = (i * 0.04) + 's';
+    const emoji = TEMA_EMOJIS[a.tema] || '📰';
+    card.innerHTML = `
+      <img class="card-img" src="${a.img}" alt="${a.tema}"
+        onerror="this.outerHTML='<div class=card-img-fallback>${emoji}</div>'">
+      <div class="card-body">
+        <span class="card-tema tema-${a.tema}">${a.tema}</span>
+        <div class="card-headline">${a.headline}</div>
+        <div class="card-lide">${a.lide}</div>
+        <div class="card-footer">
+          <span>📅 ${a.data}</span>
+          <span class="card-cta">Ver dois lados →</span>
+        </div>
+      </div>`;
+    card.onclick = () => openDetail(i, NEWS_DATA);
+    grid.appendChild(card);
+  });
+}
+
+// ── RENDER ARCHIVE ──
+function renderArchive() {
+  const dateBar = document.getElementById('date-bar');
+  const daysContainer = document.getElementById('archive-days');
+  dateBar.innerHTML = '';
+  daysContainer.innerHTML = '';
+  const dates = Object.keys(ARCHIVE_DATA).sort((a, b) => {
+    const parse = d => { const [dd,mm,yyyy] = d.split('/'); return new Date(+yyyy,+mm-1,+dd); };
+    return parse(b) - parse(a);
+  });
+  if (!dates.length) {
+    daysContainer.innerHTML = '<div class="empty-state"><div class="emoji">📅</div><h3>Arquivo vazio</h3><p>O arquivo da semana está vazio.</p></div>';
+    return;
+  }
+  dates.forEach((date, idx) => {
+    // Date pill
+    const pill = document.createElement('button');
+    pill.className = 'date-pill' + (idx === 0 ? ' active' : '');
+    pill.textContent = date;
+    pill.onclick = () => {
+      document.querySelectorAll('.date-pill').forEach(p => p.classList.remove('active'));
+      pill.classList.add('active');
+      document.querySelectorAll('.archive-day').forEach(d => d.classList.remove('active'));
+      document.getElementById('day-' + date.replace(/\//g,'-')).classList.add('active');
+      closeDetail();
+    };
+    dateBar.appendChild(pill);
+
+    // Day grid
+    const dayDiv = document.createElement('div');
+    dayDiv.className = 'archive-day' + (idx === 0 ? ' active' : '');
+    dayDiv.id = 'day-' + date.replace(/\//g,'-');
+    
+    const articles = ARCHIVE_DATA[date];
+    const header = document.createElement('div');
+    header.className = 'news-section-header';
+    header.innerHTML = `<div class="news-section-title" style="font-size:1.5rem">${date}</div><span class="news-count">${articles.length} notícias</span>`;
+    dayDiv.appendChild(header);
+
+    const grid = document.createElement('div');
+    grid.className = 'news-grid';
+    articles.forEach((a, i) => {
+      const card = document.createElement('div');
+      card.className = 'news-card';
+      card.style.animationDelay = (i * 0.04) + 's';
+      const emoji = TEMA_EMOJIS[a.tema] || '📰';
+      card.innerHTML = `
+        <img class="card-img" src="${a.img}" alt="${a.tema}"
+          onerror="this.outerHTML='<div class=card-img-fallback>${emoji}</div>'">
+        <div class="card-body">
+          <span class="card-tema tema-${a.tema}">${a.tema}</span>
+          <div class="card-headline">${a.headline}</div>
+          <div class="card-lide">${a.lide}</div>
+          <div class="card-footer">
+            <span>📅 ${a.data}</span>
+            <span class="card-cta">Ver dois lados →</span>
+          </div>
+        </div>`;
+      card.onclick = () => openDetail(i, articles);
+      grid.appendChild(card);
+    });
+    dayDiv.appendChild(grid);
+    daysContainer.appendChild(dayDiv);
+  });
+}
+
+// ── DETAIL ──
+let _currentDataset = null;
+function openDetail(i, dataset) {
+  _currentDataset = dataset;
+  selectedCard = i;
+  if (dataset === NEWS_DATA) renderGrid();
+  const a = dataset[i];
+  const dv = document.getElementById('detail-view');
+  dv.style.display = 'block';
+  dv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  const emoji = TEMA_EMOJIS[a.tema] || '📰';
+  document.getElementById('detail-img-wrap').innerHTML = `<img src="${a.img}" style="width:100%;height:100%;object-fit:cover;display:block;border-radius:12px" alt="${a.tema}" onerror="this.outerHTML='<div style=width:100%;height:100%;display:flex;align-items:center;justify-content:center;font-size:2.5rem>${emoji}</div>'">`;
+  document.getElementById('detail-headline').textContent = a.headline;
+  document.getElementById('detail-meta').textContent = a.fonte_principal + ' · ' + a.data;
+  document.getElementById('left-summary').textContent = a.left_summary;
+  document.getElementById('right-summary').textContent = a.right_summary;
+  renderSources('left-sources', a.left_sources, 'src-l');
+  renderSources('right-sources', a.right_sources, 'src-r');
+}
+
+function closeDetail() {
+  selectedCard = null;
+  document.getElementById('detail-view').style.display = 'none';
+  if (_currentDataset === NEWS_DATA) renderGrid();
+}
+
+function renderSources(id, sources, cls) {
+  const el = document.getElementById(id);
+  el.innerHTML = (sources || []).map(s => {
+    const abbr = (s.name || '?').split(/\s+/).map(w => w[0]).join('').slice(0, 2).toUpperCase();
+    const hasUrl = s.url && s.url.startsWith('http');
+    const tag = hasUrl ? 'a' : 'div';
+    const href = hasUrl ? `href="${s.url}" target="_blank" rel="noopener"` : '';
+    return `<${tag} class="source-row" ${href}>
+      <div class="source-badge ${cls}">${abbr}</div>
+      <div class="source-text">
+        <span class="source-name">${s.name}</span>
+        <span class="source-title">${s.title || ''}</span>
+      </div>
+      ${hasUrl ? '<span class="source-arrow">↗</span>' : ''}
+    </${tag}>`;
+  }).join('');
+}
+</script>
+</body>
+</html>
